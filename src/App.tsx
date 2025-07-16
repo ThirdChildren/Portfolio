@@ -9,7 +9,7 @@ interface Project {
   projectUrl: string; // URL progetto su IPFS
 }
 
-// Componente per la card del progetto
+// Componente card per ogni progetto
 const ProjectCard: React.FC<{ project: Project }> = ({ project }) => (
   <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700 group transition-transform duration-300 hover:scale-105 hover:shadow-2xl">
     <div className="relative">
@@ -50,16 +50,30 @@ const App: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // 1️⃣ Stato darkMode: legge localStorage o preferenza di sistema
   const [darkMode, setDarkMode] = useState(() => {
-    if (typeof window !== "undefined") {
-      return (
-        document.documentElement.classList.contains("dark") ||
-        window.matchMedia("(prefers-color-scheme: dark)").matches
-      );
-    }
-    return false;
+    if (typeof window === "undefined") return false;
+    return (
+      localStorage.theme === "dark" ||
+      (!("theme" in localStorage) &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches)
+    );
   });
 
+  // 2️⃣ Effetto: applica/rimuove la classe .dark e salva in localStorage
+  useEffect(() => {
+    const root = document.documentElement;
+    if (darkMode) {
+      root.classList.add("dark");
+      localStorage.theme = "dark";
+    } else {
+      root.classList.remove("dark");
+      localStorage.theme = "light";
+    }
+  }, [darkMode]);
+
+  // 3️⃣ Fetch dei progetti da IPFS
   useEffect(() => {
     const fetchProjects = async () => {
       try {
@@ -67,7 +81,7 @@ const App: React.FC = () => {
         if (!response.ok)
           throw new Error("Errore nel caricamento dei progetti");
         const data = await response.json();
-        setProjects(data.projects || data); // accetta sia {projects: [...]} che array diretto
+        setProjects(data.projects || data);
       } catch (err: any) {
         setError(err.message || "Errore sconosciuto");
       } finally {
@@ -76,15 +90,6 @@ const App: React.FC = () => {
     };
     fetchProjects();
   }, []);
-
-  useEffect(() => {
-    // Gestione dark mode: aggiungi/rimuovi la classe 'dark' su <html>
-    if (darkMode) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }, [darkMode]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -104,6 +109,7 @@ const App: React.FC = () => {
               aria-label="Toggle dark mode"
             >
               {darkMode ? (
+                /* Icona Sole */
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-5 w-5 text-purple-700 dark:text-purple-200"
@@ -119,6 +125,7 @@ const App: React.FC = () => {
                   />
                 </svg>
               ) : (
+                /* Icona Luna */
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-5 w-5 text-purple-700 dark:text-purple-200"
@@ -138,7 +145,9 @@ const App: React.FC = () => {
           </div>
         </div>
       </nav>
-      <main className="flex-1 w-full max-w-7xl mx-auto px-2 sm:px-4 md:px-8 bg-gradient-to-br from-blue-50 to-purple-100 dark:from-gray-900 dark:to-gray-800">
+
+      {/* Contenuto principale */}
+      <main className="flex-1 w-full max-w-7xl mx-auto px-2 sm:px-4 md:px-8">
         <h1 className="text-4xl md:text-5xl font-extrabold text-center mb-12 text-purple-700 dark:text-purple-200 drop-shadow-lg tracking-tight">
           Il mio Portfolio su IPFS
         </h1>
@@ -156,6 +165,7 @@ const App: React.FC = () => {
             ))}
         </div>
       </main>
+
       {/* Footer */}
       <footer className="mt-16 py-6 bg-white/80 dark:bg-gray-900/80 border-t border-purple-100 dark:border-gray-800 text-center text-sm text-gray-500 dark:text-gray-300">
         Powered by{" "}

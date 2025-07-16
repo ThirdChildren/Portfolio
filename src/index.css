@@ -1,7 +1,10 @@
+/* 1. Import di base Tailwind 4 (CSS-first) */
 @import "tailwindcss";
 
-/* Tailwind 4 dark mode: abilitata di default tramite classi 'dark:' */
+/* 2. Abilitiamo il dark mode basato sulla classe .dark invece che sul media-query */
+@custom-variant dark (&:where(.dark, .dark *));
 
+/* 3. Reset base e full-viewport */
 html,
 body,
 #root {
@@ -12,12 +15,13 @@ body,
   background: transparent;
 }
 
+/* 4. Gradient di sfondo che cambia con il tema */
 body {
-  @apply bg-gradient-to-br from-blue-50 to-purple-100 dark:from-gray-900 dark:to-gray-800;
+  @apply bg-gradient-to-br from-blue-50 to-purple-100
+    dark:from-gray-900 dark:to-gray-800;
 }
 
-/* Rimuovo padding/margini inutili dai container principali */
-
+/* 5. Rimuovo larghezze/margini extra dai container Tailwind */
 .max-w-7xl,
 .max-w-6xl,
 .mx-auto {
@@ -26,7 +30,7 @@ body {
   margin-right: 0 !important;
 }
 
-/* Miglioro la scrollbar in dark mode */
+/* 6. Scrollbar custom in dark mode */
 html.dark ::-webkit-scrollbar {
   background: #232136;
 }
